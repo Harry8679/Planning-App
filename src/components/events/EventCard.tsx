@@ -1,5 +1,4 @@
 import type { Event } from '../../types/event.types';
-// import { Clock, Calendar, MapPin } from 'lucide-react';
 import { Clock, Calendar } from 'lucide-react';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
