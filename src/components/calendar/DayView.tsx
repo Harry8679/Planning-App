@@ -1,11 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { format, startOfDay, endOfDay } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import { useEvents } from '../../hooks/useEvents';
 import { EventCard } from '../events/EventCard';
 import { EventModal } from '../events/EventModal';
 import { Plus, Clock } from 'lucide-react';
-import { Event } from '../../types/event.types';
+import type { Event } from '../../types/event.types';
+import { useEvents } from '../../hooks/useEvent';
 
 interface DayViewProps {
   date: Date;
@@ -13,25 +13,25 @@ interface DayViewProps {
 
 export const DayView = ({ date }: DayViewProps) => {
   const { events, loading } = useEvents();
-  const [dayEvents, setDayEvents] = useState<Event[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<Event | undefined>(undefined);
 
-  useEffect(() => {
+  // ✅ Donnée dérivée → useMemo
+  const dayEvents = useMemo(() => {
     const start = startOfDay(date);
     const end = endOfDay(date);
 
-    const filtered = events.filter(event => {
-      const eventDate = event.startDate.toDate();
-      return eventDate >= start && eventDate <= end;
-    });
-
-    // Trier par heure de début
-    const sorted = filtered.sort((a, b) => 
-      a.startDate.toDate().getTime() - b.startDate.toDate().getTime()
-    );
-
-    setDayEvents(sorted);
+    return events
+      .filter(event => {
+        const eventDate = event.startDate.toDate();
+        return eventDate >= start && eventDate <= end;
+      })
+      .slice()
+      .sort(
+        (a, b) =>
+          a.startDate.toDate().getTime() -
+          b.startDate.toDate().getTime()
+      );
   }, [events, date]);
 
   const handleEventClick = (event: Event) => {
@@ -49,13 +49,11 @@ export const DayView = ({ date }: DayViewProps) => {
     setSelectedEvent(undefined);
   };
 
-  // Générer les heures de la journée
   const hours = Array.from({ length: 24 }, (_, i) => i);
 
   return (
     <div className="h-full bg-white">
       <div className="max-w-7xl mx-auto p-6">
-        {/* En-tête */}
         <div className="flex items-center justify-between mb-6">
           <div>
             <h3 className="text-2xl font-bold text-gray-900 capitalize">
@@ -89,13 +87,11 @@ export const DayView = ({ date }: DayViewProps) => {
           </div>
         ) : (
           <div className="space-y-6">
-            {/* Vue chronologique par heure */}
             <div className="grid grid-cols-[80px_1fr] gap-4">
               {hours.map(hour => {
-                const hourEvents = dayEvents.filter(event => {
-                  const eventHour = event.startDate.toDate().getHours();
-                  return eventHour === hour;
-                });
+                const hourEvents = dayEvents.filter(
+                  e => e.startDate.toDate().getHours() === hour
+                );
 
                 return (
                   <div key={hour} className="contents">
@@ -104,7 +100,7 @@ export const DayView = ({ date }: DayViewProps) => {
                         {hour.toString().padStart(2, '0')}:00
                       </span>
                     </div>
-                    <div className="border-t border-gray-200 pt-2 min-h-[60px]">
+                    <div className="border-t border-gray-200 pt-2 min-h-15">
                       {hourEvents.length > 0 && (
                         <div className="space-y-2">
                           {hourEvents.map(event => (
@@ -122,7 +118,6 @@ export const DayView = ({ date }: DayViewProps) => {
               })}
             </div>
 
-            {/* Liste compacte des événements */}
             <div className="mt-8">
               <h4 className="text-lg font-semibold text-gray-900 mb-4">
                 Tous les événements
@@ -142,7 +137,6 @@ export const DayView = ({ date }: DayViewProps) => {
         )}
       </div>
 
-      {/* Modal d'événement */}
       <EventModal
         isOpen={isModalOpen}
         onClose={handleCloseModal}

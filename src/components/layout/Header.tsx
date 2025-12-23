@@ -23,7 +23,7 @@ export const Header = () => {
         <div className="flex items-center justify-between h-16">
           {/* Logo et nom */}
           <Link to="/dashboard" className="flex items-center gap-3 group">
-            <div className="w-10 h-10 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-xl flex items-center justify-center group-hover:scale-105 transition-transform">
+            <div className="w-10 h-10 bg-linear-to-br from-indigo-600 to-purple-600 rounded-xl flex items-center justify-center group-hover:scale-105 transition-transform">
               <Calendar className="w-6 h-6 text-white" />
             </div>
             <div>
@@ -56,7 +56,7 @@ export const Header = () => {
               onClick={() => setShowUserMenu(!showUserMenu)}
               className="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors"
             >
-              <div className="w-9 h-9 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-full flex items-center justify-center">
+              <div className="w-9 h-9 bg-linear-to-br from-indigo-500 to-purple-500 rounded-full flex items-center justify-center">
                 <User className="w-5 h-5 text-white" />
               </div>
               <div className="hidden md:block text-left">

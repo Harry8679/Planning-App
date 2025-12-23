@@ -3,6 +3,8 @@ import type { FormEvent } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { Mail, Lock, User, AlertCircle, Loader2, CheckCircle } from 'lucide-react';
+import { FirebaseError } from 'firebase/app';
+
 
 export const RegisterForm = () => {
   const [formData, setFormData] = useState({
@@ -44,15 +46,26 @@ export const RegisterForm = () => {
     try {
       await signUp(formData.email, formData.password, formData.name);
       navigate('/dashboard');
-    } catch (err: any) {
-      if (err.code === 'auth/email-already-in-use') {
-        setError('Cet email est déjà utilisé.');
-      } else {
-        setError('Erreur lors de l\'inscription. Veuillez réessayer.');
-      }
-    } finally {
-      setLoading(false);
+    } catch (err: unknown) {
+        if (err instanceof FirebaseError) {
+            switch (err.code) {
+            case 'auth/email-already-in-use':
+                setError('Cet email est déjà utilisé.');
+                break;
+            case 'auth/invalid-email':
+                setError('Email invalide.');
+                break;
+            case 'auth/weak-password':
+                setError('Mot de passe trop faible.');
+                break;
+            default:
+                setError("Erreur lors de l'inscription. Veuillez réessayer.");
+            }
+        } else {
+            setError("Erreur inconnue.");
+        }
     }
+
   };
 
   const handleGoogleSignIn = async () => {
@@ -62,7 +75,7 @@ export const RegisterForm = () => {
     try {
       await signInWithGoogle();
       navigate('/dashboard');
-    } catch (err) {
+    } catch {
       setError('Erreur lors de la connexion avec Google.');
     } finally {
       setLoading(false);
@@ -87,7 +100,7 @@ export const RegisterForm = () => {
   const strength = passwordStrength(formData.password);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 to-purple-100 px-4 py-12">
+    <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-indigo-50 to-purple-100 px-4 py-12">
       <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-2xl shadow-xl">
         <div>
           <h2 className="text-center text-3xl font-bold text-gray-900">
@@ -101,7 +114,7 @@ export const RegisterForm = () => {
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           {error && (
             <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg">
-              <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
+              <AlertCircle className="w-5 h-5 text-red-500 shrink-0" />
               <p className="text-sm text-red-600">{error}</p>
             </div>
           )}

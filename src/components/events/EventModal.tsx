@@ -1,11 +1,11 @@
 import { useState } from 'react';
-import { Event, EventFormData } from '../../types/event.types';
+import type { Event, EventFormData } from '../../types/event.types';
 import { EventForm } from './EventForm';
-import { useEvents } from '../../hooks/useEvents';
 import { X, Trash2, Calendar, Clock, FileText, Bell } from 'lucide-react';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import toast from 'react-hot-toast';
+import { useEvents } from '../../hooks/useEvent';
 
 interface EventModalProps {
   isOpen: boolean;
@@ -44,7 +44,7 @@ export const EventModal = ({ isOpen, onClose, event, defaultDate }: EventModalPr
       await deleteEvent(event.id);
       toast.success('Événement supprimé');
       onClose();
-    } catch (error) {
+    } catch {
       toast.error('Erreur lors de la suppression');
     }
   };

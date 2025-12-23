@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import type { FormEvent } from 'react';
-import { Event, EventFormData } from '../../types/event.types';
+import type { Event, EventColor, EventFormData } from '../../types/event.types';
 import { Calendar, Clock, FileText, Tag, Bell } from 'lucide-react';
 import { format } from 'date-fns';
 
@@ -11,7 +11,11 @@ interface EventFormProps {
   onCancel: () => void;
 }
 
-const colorOptions = [
+const colorOptions: {
+  value: EventColor;
+  label: string;
+  class: string;
+}[] = [
   { value: 'blue', label: 'Bleu', class: 'bg-blue-500' },
   { value: 'green', label: 'Vert', class: 'bg-green-500' },
   { value: 'red', label: 'Rouge', class: 'bg-red-500' },
@@ -21,6 +25,18 @@ const colorOptions = [
   { value: 'indigo', label: 'Indigo', class: 'bg-indigo-500' },
   { value: 'gray', label: 'Gris', class: 'bg-gray-500' },
 ];
+
+
+// const colorOptions = [
+//   { value: 'blue', label: 'Bleu', class: 'bg-blue-500' },
+//   { value: 'green', label: 'Vert', class: 'bg-green-500' },
+//   { value: 'red', label: 'Rouge', class: 'bg-red-500' },
+//   { value: 'yellow', label: 'Jaune', class: 'bg-yellow-500' },
+//   { value: 'purple', label: 'Violet', class: 'bg-purple-500' },
+//   { value: 'pink', label: 'Rose', class: 'bg-pink-500' },
+//   { value: 'indigo', label: 'Indigo', class: 'bg-indigo-500' },
+//   { value: 'gray', label: 'Gris', class: 'bg-gray-500' },
+// ];
 
 export const EventForm = ({ event, defaultDate, onSubmit, onCancel }: EventFormProps) => {
   const [loading, setLoading] = useState(false);

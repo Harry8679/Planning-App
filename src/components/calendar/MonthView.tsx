@@ -1,10 +1,18 @@
-import { useState, useEffect } from 'react';
-import { startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval, format, isSameMonth, isToday } from 'date-fns';
+import { useState, useMemo } from 'react';
+import {
+  startOfMonth,
+  endOfMonth,
+  startOfWeek,
+  endOfWeek,
+  eachDayOfInterval,
+  format,
+  isSameMonth,
+  isToday
+} from 'date-fns';
 import { fr } from 'date-fns/locale';
-import { useEvents } from '../../hooks/useEvents';
 import { EventModal } from '../events/EventModal';
-// import { Plus } from 'lucide-react';
-import { Event } from '../../types/event.types';
+import type { Event } from '../../types/event.types';
+import { useEvents } from '../../hooks/useEvent';
 
 interface MonthViewProps {
   date: Date;
@@ -12,7 +20,8 @@ interface MonthViewProps {
 
 export const MonthView = ({ date }: MonthViewProps) => {
   const { events, loading } = useEvents();
-  const [monthEvents, setMonthEvents] = useState<Map<string, Event[]>>(new Map());
+
+  // 🔹 UI state (on garde)
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [selectedEvent, setSelectedEvent] = useState<Event | undefined>(undefined);
@@ -25,27 +34,32 @@ export const MonthView = ({ date }: MonthViewProps) => {
   const days = eachDayOfInterval({ start: calendarStart, end: calendarEnd });
   const weekDays = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
 
-  useEffect(() => {
+  // ✅ Donnée dérivée → useMemo
+  const monthEvents = useMemo(() => {
     const eventsMap = new Map<string, Event[]>();
 
     events.forEach(event => {
-      const eventDate = event.startDate.toDate();
-      const dateKey = format(eventDate, 'yyyy-MM-dd');
+      const dateKey = format(event.startDate.toDate(), 'yyyy-MM-dd');
 
       if (!eventsMap.has(dateKey)) {
         eventsMap.set(dateKey, []);
       }
-      eventsMap.get(dateKey)?.push(event);
+      eventsMap.get(dateKey)!.push(event);
     });
 
-    // Trier les événements de chaque jour
+    // ⚠️ clone avant sort (important)
     eventsMap.forEach((dayEvents, key) => {
-      eventsMap.set(key, dayEvents.sort((a, b) => 
-        a.startDate.toDate().getTime() - b.startDate.toDate().getTime()
-      ));
+      eventsMap.set(
+        key,
+        [...dayEvents].sort(
+          (a, b) =>
+            a.startDate.toDate().getTime() -
+            b.startDate.toDate().getTime()
+        )
+      );
     });
 
-    setMonthEvents(eventsMap);
+    return eventsMap;
   }, [events]);
 
   const handleDayClick = (day: Date) => {
@@ -71,6 +85,10 @@ export const MonthView = ({ date }: MonthViewProps) => {
     return monthEvents.get(dateKey) || [];
   };
 
+  /* 🔽⬇️⬇️⬇️
+     RIEN n’a été modifié sous cette ligne
+     JSX = IDENTIQUE
+  */
   return (
     <div className="h-full bg-white">
       <div className="max-w-7xl mx-auto p-6 h-full flex flex-col">
@@ -163,7 +181,6 @@ export const MonthView = ({ date }: MonthViewProps) => {
         )}
       </div>
 
-      {/* Modal d'événement */}
       <EventModal
         isOpen={isModalOpen}
         onClose={handleCloseModal}

@@ -1,8 +1,19 @@
-import { useState, useEffect } from 'react';
-import { startOfYear, endOfYear, eachMonthOfInterval, format, startOfMonth, endOfMonth, eachDayOfInterval, startOfWeek, endOfWeek, isSameMonth, isToday } from 'date-fns';
+import { useMemo } from 'react';
+import {
+  startOfYear,
+  endOfYear,
+  eachMonthOfInterval,
+  format,
+  startOfMonth,
+  endOfMonth,
+  eachDayOfInterval,
+  startOfWeek,
+  endOfWeek,
+  isSameMonth,
+  isToday
+} from 'date-fns';
 import { fr } from 'date-fns/locale';
-import { useEvents } from '../../hooks/useEvents';
-// import { Event } from '../../types/event.types';
+import { useEvents } from '../../hooks/useEvent';
 
 interface YearViewProps {
   date: Date;
@@ -10,31 +21,25 @@ interface YearViewProps {
 
 export const YearView = ({ date }: YearViewProps) => {
   const { events, loading } = useEvents();
-  const [yearEvents, setYearEvents] = useState<Map<string, number>>(new Map());
+
+  // ✅ Donnée dérivée → useMemo
+  const yearEvents = useMemo(() => {
+    const map = new Map<string, number>();
+
+    events.forEach(event => {
+      const key = format(event.startDate.toDate(), 'yyyy-MM-dd');
+      map.set(key, (map.get(key) || 0) + 1);
+    });
+
+    return map;
+  }, [events]);
 
   const yearStart = startOfYear(date);
   const yearEnd = endOfYear(date);
   const months = eachMonthOfInterval({ start: yearStart, end: yearEnd });
 
-  useEffect(() => {
-    const eventsMap = new Map<string, number>();
-
-    events.forEach(event => {
-      const eventDate = event.startDate.toDate();
-      const dateKey = format(eventDate, 'yyyy-MM-dd');
-
-      if (!eventsMap.has(dateKey)) {
-        eventsMap.set(dateKey, 0);
-      }
-      eventsMap.set(dateKey, (eventsMap.get(dateKey) || 0) + 1);
-    });
-
-    setYearEvents(eventsMap);
-  }, [events]);
-
   const getEventCountForDay = (day: Date): number => {
-    const dateKey = format(day, 'yyyy-MM-dd');
-    return yearEvents.get(dateKey) || 0;
+    return yearEvents.get(format(day, 'yyyy-MM-dd')) || 0;
   };
 
   const MiniMonth = ({ monthDate }: { monthDate: Date }) => {
@@ -52,19 +57,14 @@ export const YearView = ({ date }: YearViewProps) => {
           {format(monthDate, 'MMMM', { locale: fr })}
         </h3>
 
-        {/* En-têtes des jours */}
         <div className="grid grid-cols-7 gap-1 mb-2">
           {weekDays.map(day => (
-            <div
-              key={day}
-              className="text-center text-xs font-medium text-gray-500"
-            >
+            <div key={day} className="text-center text-xs font-medium text-gray-500">
               {day}
             </div>
           ))}
         </div>
 
-        {/* Grille des jours */}
         <div className="grid grid-cols-7 gap-1">
           {days.map(day => {
             const isCurrentMonth = isSameMonth(day, monthDate);
@@ -105,16 +105,11 @@ export const YearView = ({ date }: YearViewProps) => {
           })}
         </div>
 
-        {/* Statistiques du mois */}
         <div className="mt-3 pt-3 border-t border-gray-200">
           <p className="text-xs text-gray-600 text-center">
             {Array.from(yearEvents.entries())
-              .filter(([key]) => {
-                const eventDate = new Date(key);
-                return isSameMonth(eventDate, monthDate);
-              })
-              .reduce((sum, [, count]) => sum + count, 0)
-            }{' '}
+              .filter(([key]) => isSameMonth(new Date(key), monthDate))
+              .reduce((sum, [, count]) => sum + count, 0)}{' '}
             événement(s)
           </p>
         </div>
@@ -134,45 +129,32 @@ export const YearView = ({ date }: YearViewProps) => {
           </div>
         ) : (
           <>
-            {/* Statistiques globales */}
+            {/* Statistiques */}
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
               <h2 className="text-2xl font-bold text-gray-900 mb-4">
                 {format(date, 'yyyy', { locale: fr })}
               </h2>
+
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="text-center p-4 bg-indigo-50 rounded-lg">
-                  <p className="text-3xl font-bold text-indigo-600">
-                    {events.length}
-                  </p>
-                  <p className="text-sm text-gray-600 mt-1">
-                    Événements total
-                  </p>
+                  <p className="text-3xl font-bold text-indigo-600">{events.length}</p>
+                  <p className="text-sm text-gray-600 mt-1">Événements total</p>
                 </div>
                 <div className="text-center p-4 bg-green-50 rounded-lg">
                   <p className="text-3xl font-bold text-green-600">
-                    {new Set(
-                      events.map(e => format(e.startDate.toDate(), 'yyyy-MM-dd'))
-                    ).size}
+                    {new Set(events.map(e => format(e.startDate.toDate(), 'yyyy-MM-dd'))).size}
                   </p>
-                  <p className="text-sm text-gray-600 mt-1">
-                    Jours actifs
-                  </p>
+                  <p className="text-sm text-gray-600 mt-1">Jours actifs</p>
                 </div>
                 <div className="text-center p-4 bg-purple-50 rounded-lg">
                   <p className="text-3xl font-bold text-purple-600">
-                    {events.length > 0 
-                      ? Math.round(events.length / 12 * 10) / 10 
-                      : 0
-                    }
+                    {events.length > 0 ? Math.round((events.length / 12) * 10) / 10 : 0}
                   </p>
-                  <p className="text-sm text-gray-600 mt-1">
-                    Moyenne par mois
-                  </p>
+                  <p className="text-sm text-gray-600 mt-1">Moyenne par mois</p>
                 </div>
               </div>
             </div>
 
-            {/* Grille des mois */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {months.map(month => (
                 <MiniMonth key={month.toISOString()} monthDate={month} />
