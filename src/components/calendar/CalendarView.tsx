@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { DayView } from './DayView';
 import { MonthView } from './MonthView';
 import { YearView } from './YearView';
-import { ChevronLeft, ChevronRight, Calendar } from 'lucide-react';
+// import { ChevronLeft, ChevronRight, Calendar } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { format, addMonths, subMonths, addYears, subYears, addDays, subDays } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
