@@ -107,7 +107,7 @@ export const MonthView = ({ date }: MonthViewProps) => {
                     key={day.toISOString()}
                     onClick={() => handleDayClick(day)}
                     className={`
-                      bg-white p-2 min-h-[120px] cursor-pointer transition-colors
+                      bg-white p-2 min-h-30 cursor-pointer transition-colors
                       hover:bg-gray-50
                       ${!isCurrentMonth ? 'bg-gray-50/50' : ''}
                     `}
