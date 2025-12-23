@@ -38,6 +38,7 @@ export const LoginForm = () => {
       navigate('/dashboard');
     } catch (err) {
       setError('Erreur lors de la connexion avec Google.');
+      console.log(err);
     } finally {
       setLoading(false);
     }
