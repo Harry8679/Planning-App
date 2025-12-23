@@ -22,6 +22,7 @@ export const LoginForm = () => {
       navigate('/dashboard');
     } catch (err) {
       setError('Identifiants incorrects. Veuillez réessayer.');
+      console.log(err);
     } finally {
       setLoading(false);
     }
