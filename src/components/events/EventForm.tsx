@@ -1,4 +1,5 @@
-import { useState, useEffect, FormEvent } from 'react';
+import { useState, useEffect } from 'react';
+import type { FormEvent } from 'react';
 import { Event, EventFormData } from '../../types/event.types';
 import { Calendar, Clock, FileText, Tag, Bell } from 'lucide-react';
 import { format } from 'date-fns';
